@@ -6,6 +6,7 @@
 @note    0.1.0 (2019-09-20): Writed the first drafts.
 '''
 
+from typing import Any
 from abc import ABC
 
 

@@ -1,6 +1,6 @@
-from .symbios import Symbios
-from .publisher import Publisher
-from .consumer import Consumer
-from .middleware import Middleware
-from .message import IncMessage, SenMessage
 from .connector import Connector
+from .consumer import Consumer
+from .message import IncMessage, SenMessage
+from .middleware import Middleware
+from .publisher import Publisher
+from .symbios import Symbios

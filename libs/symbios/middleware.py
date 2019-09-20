@@ -8,10 +8,11 @@
 
 from typing import List, Awaitable
 
-from . import Symbios
+# from . import Symbios
 
 
 class Middleware:
-    def __init__(self, self_symbios: Symbios):
-        ...
+    # def __init__(self, self_symbios: Symbios):
+    #     ...
+    ...
 
