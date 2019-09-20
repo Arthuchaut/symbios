@@ -64,9 +64,7 @@ class MiddlewareQueue:
 
         self._stack.append(midd)
 
-    async def run_until_empty(
-        self, message: DeliveredMessage
-    ) -> Awaitable[Any]:
+    async def run_until_end(self, message: DeliveredMessage) -> Awaitable[Any]:
         '''Run all middlewares in queue.
 
         This method have to be called by the aiormq consumer.
@@ -75,5 +73,7 @@ class MiddlewareQueue:
             message (DeliveredMessage): The aiormq delivered message.
         '''
 
+        inc_message: IncomingMessage = IncomingMessage(message)
+
         for midd in self._stack:
-            await midd.task(self._symbios, IncomingMessage(message))
+            await midd.task(self._symbios, inc_message)
