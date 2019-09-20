@@ -129,7 +129,7 @@ class Producer:
 
         chann: Channel = await self.connector.channel
 
-        if self.exchange != '':
+        if self.exchange != '' and self.exchange is not None:
             await chann.exchange_declare(
                 exchange=self.exchange, exchange_type=self.exchange_type
             )
