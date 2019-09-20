@@ -33,9 +33,9 @@ class Connector:
             Default to _DEFAULT_USER.
         _password (str): The password to connect.
             Default to _DEFAULT_PASSWORD.
-        _connection (Connection): The broker establiched connection.
+        _connection (Connection): The broker established connection.
         _url (str): The built url for establishing the broker connection.
-        connection (Connection): The broker establiched connection.
+        connection (Connection): The broker established connection.
             Create a connection if isn't exists.
         channel (Channel): The connection channel.
     '''
@@ -92,7 +92,7 @@ class Connector:
         '''
 
         if self._connection is None:
-            return await aiormq.connect(self._url)
+            self._connection = await aiormq.connect(self._url)
 
         return self._connection
 
