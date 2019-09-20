@@ -8,7 +8,10 @@
 
 from typing import Awaitable, Any
 
-from . import Connector, Props, SendingMessage, Channel
+from . import Props, Channel
+from .message import SendingMessage
+from .symbios import Symbios
+from .exchange import Exchange
 
 
 class Producer:
@@ -17,53 +20,7 @@ class Producer:
     Allows to emit a message to the borker.
 
     Attributes:
-        DIRECT_EXCHANGE (str): The default exhange type. Sends the message
-            to alls the queues that are bound to the same routing_key that
-            the message routing_key.
-
-            Example: 
-                If Producer::routing_key == Consumer::queue::binding_key
-                then deliver the message to this queue.
-        FANOUT_EXCHANGE (str): Sends the message to all the queues 
-            that are bound to it. The routing_key will be ignored.
-
-            Example:
-                If Consumer::binding_key is bound to this exchange_type
-                then deliver the message to this queue.
-        TOPIC_EXCHANGE (str): Sends the message to all the queues that
-            are bound to the same routing_key that the message routing_key
-            and that the routing_key pattern of the bound queue is matching 
-            with the message routing_key.
-
-            Example:
-                Producer::routing_key = 'my.routing.key'
-                Consumer::binding_key = 'my.*.key'
-
-                is_matching(Producer::routing_key, Consumer::binding_key)
-                >>> True
-
-                Producer::routing_key = 'his.routing.key'
-                Consumer::binding_key = 'my.*.key'
-
-                is_matching(Producer::routing_key, Consumer::binding_key)
-                >>> False
-        HEADERS_EXCHANGE (str): Sends the message to all queues at which 
-            their routing_key matches to specific header attributes. 
-            The routing_key is ignored.
-
-            Example:
-                Header::attr['x-match'] = 'my_value'
-                Consumer::binding_key = 'my_value'
-
-                Header::attr['x-match'] == Consumer::binding_key
-                >>> True
-
-                Header::attr['x-match'] = 'my_other_value'
-                Consumer::binding_key = 'my_value'
-
-                Header::attr['x-match'] == Consumer::binding_key
-                >>> False
-        connector (Connector): The Connector instance.
+        symbios (Symbios): The Symbios instance.
         exchange (str): the exchange name to bind with the exchange type.
         exchange_type (str): The exhange type.
         routing_key (str): The message routing key.
@@ -73,17 +30,11 @@ class Producer:
             the message to the receiver directly if True.
     '''
 
-    DIRECT_EXCHANGE: str = 'direct'
-    FANOUT_EXCHANGE: str = 'fanout'
-    TOPIC_EXCHANGE: str = 'topic'
-    HEADERS_EXCHANGE: str = 'match'
-
     def __init__(
         self,
         *,
-        connector: Connector,
-        exchange: str = '',
-        exchange_type: str = DIRECT_EXCHANGE,
+        symbios: Symbios,
+        exchange: Exchange = Exchange(),
         routing_key: str = None,
         props: Props = Props(),
         mandatory: bool = False,
@@ -92,10 +43,9 @@ class Producer:
         '''The Producer initializer.
 
         Args:
-            connector (Connector): The Connector instance.
-            exchange (str): the exchange name to bind with the exchange type.
-                Default to ''.
-            exchange_type (str): The exhange type. Default to DIRECT_EXCHANGE.
+            symbios (Symbios): The Symbios instance.
+            exchange (Exchange): the exchange name to bind with the 
+                exchange type. Default to Exchange().
             routing_key (str): The message routing key. Default to None.
             props (Props): The message properties that contain the header.
                 Default to an empty instance of Props.
@@ -106,9 +56,8 @@ class Producer:
                 Default to False.
         '''
 
-        self.connector: Connector = connector
-        self.exchange: str = exchange
-        self.exchange_type: str = exchange_type
+        self.symbios: Symbios = symbios
+        self.exchange: Exchange = exchange
         self.routing_key: str = routing_key
         self.props: Props = props
         self.mandatory: bool = mandatory
@@ -127,25 +76,26 @@ class Producer:
             ProducerError: If the type of exchange requires a routing_key.
         '''
 
-        chann: Channel = await self.connector.channel
+        chann: Channel = await self.symbios.connector.channel
 
-        if self.exchange != '' and self.exchange is not None:
-            await chann.exchange_declare(
-                exchange=self.exchange, exchange_type=self.exchange_type
-            )
+        if self.exchange.exchange != '' and self.exchange.exchange is not None:
+            await chann.exchange_declare(**self.exchange.__dict__)
 
-        if not self.exchange_type in [
-            Producer.FANOUT_EXCHANGE,
-            Producer.HEADERS_EXCHANGE,
+        if not self.exchange.exchange_type in [
+            Exchange.FANOUT,
+            Exchange.HEADERS,
         ] and (self.routing_key == '' or self.routing_key is None):
             raise ProducerError(
-                f'Exchange type {self.exchange_type} require a routing_key.'
+                (
+                    f'Exchange type {self.exchange.exchange_type} '
+                    f'require a routing_key.'
+                )
             )
 
         await chann.basic_publish(
             message.serialized,
             routing_key=self.routing_key,
-            exchange=self.exchange,
+            exchange=self.exchange.exchange,
             properties=self.props,
             immediate=self.immediate,
             mandatory=self.mandatory,

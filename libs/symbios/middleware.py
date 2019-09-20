@@ -7,11 +7,10 @@
 '''
 
 from typing import List, Callable, Awaitable, Any
-from abc import ABC
 
 from . import DeliveredMessage
-from .symbios import Symbios
 from .message import IncomingMessage
+from .symbios import Symbios
 
 
 class Middleware:
@@ -41,18 +40,13 @@ class MiddlewareQueue:
     Manage middlewares and run all tasks when a consume event are triggered.
 
     Attributes:
-        _symbios (Symbios): The Symbios instance.
         _stack (List[Middleware]): The Middleware queue.
     '''
 
-    def __init__(self, symbios: Symbios):
+    def __init__(self):
         '''The MiddlewareQueue initializer.
-
-        Args:
-            symbios (Symbios): The Symbios instance.
         '''
 
-        self._symbios: Symbios = symbios
         self._stack: List[Middleware] = []
 
     def append(self, midd: Middleware) -> None:
@@ -64,7 +58,9 @@ class MiddlewareQueue:
 
         self._stack.append(midd)
 
-    async def run_until_end(self, message: DeliveredMessage) -> Awaitable[Any]:
+    async def run_until_end(
+        self, symbios: Symbios, message: IncomingMessage
+    ) -> Awaitable[Any]:
         '''Run all middlewares in queue.
 
         This method have to be called by the aiormq consumer.
@@ -73,7 +69,5 @@ class MiddlewareQueue:
             message (DeliveredMessage): The aiormq delivered message.
         '''
 
-        inc_message: IncomingMessage = IncomingMessage(message)
-
         for midd in self._stack:
-            await midd.task(self._symbios, inc_message)
+            await midd.task(symbios, message)

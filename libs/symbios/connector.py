@@ -6,6 +6,8 @@
 @note    0.1.0 (2019-09-20): Writed the first drafts.
 '''
 
+import asyncio
+
 import aiormq
 from aiormq import Connection, Channel
 
@@ -91,8 +93,14 @@ class Connector:
             Connection: The broker connection.
         '''
 
+        # Just a temporary patch before implement the Symbios class...
+        try:
+            loop: Any = asyncio.get_running_loop()
+        except Exception as e:
+            loop: Any = asyncio.get_event_loop()
+
         if self._connection is None:
-            self._connection = await aiormq.connect(self._url)
+            self._connection = await aiormq.connect(self._url, loop=loop)
 
         return self._connection
 
