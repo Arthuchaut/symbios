@@ -147,5 +147,8 @@ class SendingMessage:
 
 
 class SendingMessageError(Exception):
+    '''The SendingMessageError Exception class.
+    '''
+
     def __init__(self, message: str):
         super().__init__(message)

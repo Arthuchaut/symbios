@@ -1,4 +1,5 @@
 import aiormq
+from aiormq import Channel, Connection
 
 Props = aiormq.spec.Basic.Properties
 DeliveredMessage = aiormq.types.DeliveredMessage
@@ -9,5 +10,5 @@ from .connector import Connector
 from .consumer import Consumer
 from .message import IncomingMessage, SendingMessage
 from .middleware import Middleware
-from .publisher import Publisher
+from .producer import Producer
 from .symbios import Symbios

@@ -62,7 +62,7 @@ class Connector:
 
         self._protocol: str = protocol
         self._host: str = host
-        self._vhost: str = vhost
+        self._vhost: str = Connector._DEFAULT_VHOST + vhost
         self._port: int = port
         self._user: str = user
         self._password: str = password
