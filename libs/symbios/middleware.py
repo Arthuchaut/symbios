@@ -11,7 +11,7 @@ from abc import ABC
 
 from . import DeliveredMessage
 from .symbios import Symbios
-from .message import IncMessage
+from .message import IncomingMessage
 
 
 class Middleware:
@@ -22,12 +22,14 @@ class Middleware:
             stack in the middleware queue.
     '''
 
-    def __init__(self, task: Callable[[Symbios, IncMessage], Awaitable[Any]]):
+    def __init__(
+        self, task: Callable[[Symbios, IncomingMessage], Awaitable[Any]]
+    ):
         '''The Middleware initializer.
 
         Args:
-            task (Callable[[Symbios, IncMessage], Awaitable[Any]]): The task
-                to stack in the middleware queue.
+            task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): 
+                The task to stack in the middleware queue.
         '''
 
         self.task = task
@@ -66,7 +68,7 @@ class MiddlewareQueue:
         self, message: DeliveredMessage
     ) -> Awaitable[Any]:
         '''Run all middlewares in queue.
-        
+
         This method have to be called by the aiormq consumer.
 
         Args:
@@ -74,4 +76,4 @@ class MiddlewareQueue:
         '''
 
         for midd in self._stack:
-            await midd.task(self._symbios, IncMessage(message))
+            await midd.task(self._symbios, IncomingMessage(message))
