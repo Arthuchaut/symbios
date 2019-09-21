@@ -11,7 +11,9 @@ An asynchronous messaging queue manager based on [aiormq](https://github.com/mos
 - [Symbios](#symbios)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
+  - [Requirements](#requirements)
   - [Getting Started](#getting-started)
+    - [Instalation](#instalation)
     - [Emit Message](#emit-message)
     - [Listen Message](#listen-message)
     - [RPC Pattern](#rpc-pattern)
@@ -34,11 +36,31 @@ An asynchronous messaging queue manager based on [aiormq](https://github.com/mos
 ## Introduction
 
 Symbios is a Python library for communicating with **AMQP** brokers, like **RabbitMQ**.  
-Its engine is based on the [aiormq](https://github.com/mosquito/aiormq) library allowing an asynchronous management of communications.   
+Its engine is based on the [aiormq](https://github.com/mosquito/aiormq) library allowing an asynchronous management of communications.  
+Observing the communication mechanism of the AMPQ protocol, I wanted to implement a model similar to that of websockets for a simplified use.  
+Note that this vision needs medium-term tests before it can perhaps be validated later.
+
+## Requirements
+
+- Python >= 3.7.*
 
 ## Getting Started
 
-This guide is a quick demonstration of how to use Symbios.
+This guide is a quick demonstration of Symbios basics.  
+
+### Instalation
+
+**Note:** This library aims to be available on the **Pypi** packagist from its beta release.  
+In the meantime, you must retrieve this repository to use it.  
+Also note that the code examples below are written in the context of an import of **Pypi**.  
+You will therefore have to readjust the imports.
+
+You must first clone the repository.  
+Then go to the root of the project, then install the dependencies via **Pipenv**.
+
+    pipenv install --dev --pre
+
+The project is now ready for development !
 
 ### Emit Message
 
