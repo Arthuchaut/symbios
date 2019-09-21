@@ -17,6 +17,7 @@ from .message import IncomingMessage, SendingMessage
 from .middleware import Middleware, MiddlewareQueue
 from .producer import Producer
 from .consumer import Consumer
+from .rpc import RPC
 
 
 class Symbios(Connector):
