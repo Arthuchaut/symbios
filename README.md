@@ -21,6 +21,7 @@ An asynchronous messaging queue manager based on [aiormq](https://github.com/mos
       - [Client Side](#client-side)
   - [Documentation](#documentation)
     - [Development Guide](#development-guide)
+      - [Installation](#installation)
     - [Deployment Guide](#deployment-guide)
     - [Symbios Engine](#symbios-engine)
       - [Emitter](#emitter)
@@ -55,12 +56,7 @@ In the meantime, you must retrieve this repository to use it.
 Also note that the code examples below are written in the context of an import of **Pypi**.  
 You will therefore have to readjust the imports.
 
-You must first clone the repository.  
-Then go to the root of the project, then install the dependencies via **Pipenv**.
-
-    pipenv install --dev --pre
-
-The project is now ready for development !
+To import the project, see the [Installation](#installation) guide.
 
 ### Emit Message
 
@@ -163,7 +159,14 @@ if __name__ == '__main__':
 
 ### Development Guide
 
-...
+#### Installation
+
+You must first clone the repository.  
+Then go to the root of the project, then install the dependencies via **Pipenv**.
+
+    pipenv install --dev --pre
+
+The project is now ready for development !
 
 ### Deployment Guide
 
