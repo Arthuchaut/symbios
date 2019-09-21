@@ -24,18 +24,14 @@ class Connector:
         _DEFAULT_PASSWORD (str): The password to connect.
 
         _protocol (str): The broker communication protocol. 
-            Default to _DEFAULT_PROTOCOL.
         _host (str): The broker hostname or ip address.
-            Default to _DEFAULT_HOST.
         _vhost (str): The connection virtual host.
-            Default to _DEFAULT_VHOST.
         _port (int): The broker listening port.
-            Default to _DEFAULT_PORT.
         _user (str): The username to connect.
-            Default to _DEFAULT_USER.
         _password (str): The password to connect.
-            Default to _DEFAULT_PASSWORD.
         _connection (Connection): The broker established connection.
+        event_loop (EventLoop): The asyncio event loop.
+            Try to get the running event loop, else create a new instance.
         _url (str): The built url for establishing the broker connection.
         connection (Connection): The broker established connection.
             Create a connection if isn't exists.
@@ -60,6 +56,25 @@ class Connector:
         password: str = _DEFAULT_PASSWORD,
     ):
         '''The Connector initializer.
+
+        Args:
+            _protocol (str): The broker communication protocol. 
+                Default to _DEFAULT_PROTOCOL.
+            _host (str): The broker hostname or ip address.
+                Default to _DEFAULT_HOST.
+            _vhost (str): The connection virtual host.
+                Default to _DEFAULT_VHOST.
+            _port (int): The broker listening port.
+                Default to _DEFAULT_PORT.
+            _user (str): The username to connect.
+                Default to _DEFAULT_USER.
+            _password (str): The password to connect.
+                Default to _DEFAULT_PASSWORD.
+            _connection (Connection): The broker established connection.
+            _url (str): The built url for establishing the broker connection.
+            connection (Connection): The broker established connection.
+                Create a connection if isn't exists.
+            channel (Channel): The connection channel.
         '''
 
         self._protocol: str = protocol
@@ -69,6 +84,23 @@ class Connector:
         self._user: str = user
         self._password: str = password
         self._connection: Connection = None
+
+    @property
+    def event_loop(self) -> EventLoop:
+        '''Try to retrieve the current event loop if exists.
+
+        Returns:
+            EventLoop: The asyncio event loop.
+        '''
+
+        loop: EventLoop = None
+
+        try:
+            loop = asyncio.get_running_loop()
+        except Exception as e:
+            loop = asyncio.get_event_loop()
+
+        return loop
 
     @property
     def _url(self) -> str:
@@ -93,14 +125,10 @@ class Connector:
             Connection: The broker connection.
         '''
 
-        # Just a temporary patch before implement the Symbios class...
-        try:
-            loop: Any = asyncio.get_running_loop()
-        except Exception as e:
-            loop: Any = asyncio.get_event_loop()
-
         if self._connection is None:
-            self._connection = await aiormq.connect(self._url, loop=loop)
+            self._connection = await aiormq.connect(
+                self._url, loop=self.event_loop
+            )
 
         return self._connection
 

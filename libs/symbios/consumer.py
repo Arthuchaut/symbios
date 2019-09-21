@@ -77,7 +77,7 @@ class Consumer:
         '''
 
         self.task = task
-        chann: Channel = await self.symbios.connector.channel
+        chann: Channel = await self.symbios.channel
 
         self.declare_ok = await chann.queue_declare(**self.queue.__dict__)
 

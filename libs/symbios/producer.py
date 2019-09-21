@@ -76,7 +76,7 @@ class Producer:
             ProducerError: If the type of exchange requires a routing_key.
         '''
 
-        chann: Channel = await self.symbios.connector.channel
+        chann: Channel = await self.symbios.channel
 
         if self.exchange.exchange != '' and self.exchange.exchange is not None:
             await chann.exchange_declare(**self.exchange.__dict__)
