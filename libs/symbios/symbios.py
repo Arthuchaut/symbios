@@ -40,6 +40,7 @@ class Symbios(Connector):
         super().__init__(**kwargs)
 
         self._middleware_queue: MiddlewareQueue = MiddlewareQueue()
+        self.rpc: RPC = RPC(self)
 
     async def declare_queue(self, queue: Queue) -> Union[GetEmpty, GetOk]:
         '''Declare a queue to the broker.
@@ -150,29 +151,6 @@ class Symbios(Connector):
         )
 
         await consumer.listen(self._middleware_queue.run_until_end)
-
-    async def call(
-        self,
-        message: SendingMessage,
-        *,
-        exchange: Exchange = Exchange(),
-        routing_key: str = None,
-    ) -> Union[str, Dict[str, Any]]:
-        '''An RPC communication pattern.
-
-        Emit a message to the broker and retrieve the response.
-
-        Args:
-            message (SendingMessage): The message to send.
-            exchange (Exchange): the exchange name to bind with the 
-                exchange type. Default to Exchange().
-            routing_key (str): The message routing key. Default to None.
-
-        Returns:
-            Union[str, Dict[str, Any]]: The broker response back.
-        '''
-
-        ...
 
     def use(self, midd: Middleware) -> None:
         '''Implement a new middleware for the consumer.
