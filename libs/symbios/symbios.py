@@ -9,7 +9,7 @@
 
 from typing import Dict, Union, Callable, Awaitable, Any
 
-from . import Props, ArgumentsType
+from . import Props, ArgumentsType, Channel, GetEmpty, GetOk
 from .connector import Connector
 from .queue import Queue
 from .exchange import Exchange
@@ -38,7 +38,38 @@ class Symbios(Connector):
         '''
 
         super().__init__(**kwargs)
+
         self._middleware_queue: MiddlewareQueue = MiddlewareQueue()
+
+    async def declare_queue(self, queue: Queue) -> Union[GetEmpty, GetOk]:
+        '''Declare a queue to the broker.
+
+        Args:
+            queue (Queue): The queue to declare
+
+        Returns:
+            Union[GetEmpty, GetOk]: The validation of the declaration.
+        '''
+
+        chan: Channel = await self.channel
+
+        return await chan.queue_declare(**queue.__dict__)
+
+    async def declare_exchange(
+        self, exhange: Exchange
+    ) -> Union[GetEmpty, GetOk]:
+        '''Declare an exchange to the broker.
+
+        Args:
+            exhange (Exchange): The exchange to declare
+
+        Returns:
+            Union[GetEmpty, GetOk]: The validation of the declaration.
+        '''
+
+        chan: Channel = await self.channel
+
+        return await chan.exchange_declare(**exchange.__dict__)
 
     async def emit(
         self,
@@ -86,6 +117,7 @@ class Symbios(Connector):
         exclusive: bool = False,
         arguments: ArgumentsType = None,
         consumer_tag: str = None,
+        ephemeral: bool = False,
     ) -> None:
         '''Listen a message from a broker queue.
 
@@ -102,7 +134,7 @@ class Symbios(Connector):
             consumer_tag (str): The consumer identity. Default to None.
         '''
 
-        midd: Middleware = Middleware(task, ephemeral=True)
+        midd: Middleware = Middleware(task, ephemeral=ephemeral)
         self._middleware_queue.append(midd)
 
         consumer: Consumer = Consumer(

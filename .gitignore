@@ -109,3 +109,4 @@ venv.bak/
 # Application
 Pipfile.lock
 main.py
+server.py
