@@ -23,6 +23,9 @@ class IncomingMessage:
         header (Any): The message header.
         props (Props): The message properties.
         body (bytes): The message content.
+        _content_type_corr (Dict[str, Any]): The content type converted 
+            dictionnary.
+        deserialized (Union[str, Dict[str, Any]]): The deserialized message.
     '''
 
     def __init__(self, message: DeliveredMessage):
@@ -87,8 +90,20 @@ class SendingMessage:
     '''The SendingMessage class declaration.
 
     Attributes:
+        _CONTENT_TYPES (Dict[Any, str]): The content type dictionnary.
+        _type_corr (Dict[str, Any]): The typing converter dictionnary.
         message (Union[str, Dict[str, Any]]): The message to send.
+        content_type (str): The message content type.
+        serialized (bytes): The message converted in bytes.
     '''
+
+    _CONTENT_TYPES: Dict[Any, str] = {
+        str: 'text/plain',
+        bool: 'text/plain',
+        int: 'text/plain',
+        float: 'text/plain',
+        dict: 'application/json',
+    }
 
     def __init__(self, message: Union[str, Dict[str, Any]]):
         '''The SendingMessage initializer.
@@ -100,6 +115,8 @@ class SendingMessage:
         self.message: Union[str, Dict[str, Any]] = message
         self._type_corr: Dict[str, Any] = {
             str: self._parse_text,
+            int: self._parse_text,
+            float: self._parse_text,
             dict: self._parse_json,
         }
 
@@ -121,7 +138,20 @@ class SendingMessage:
                 f'Type {type(self.message).__name__} is not serializable.'
             )
 
-    def _parse_text(self, body: str) -> bytes:
+    @property
+    def content_type(self) -> str:
+        '''Return the message content type.
+
+        Returns:
+            str: The message content type.
+        '''
+
+        try:
+            return SendingMessage._CONTENT_TYPES[type(self.message)]
+        except KeyError as e:
+            return ''
+
+    def _parse_text(self, body: Union[str, int, float]) -> bytes:
         '''Parse the body string to bytes.
 
         Args:
@@ -131,7 +161,7 @@ class SendingMessage:
             bytes: The body parsed.
         '''
 
-        return body.encode()
+        return str(body).encode()
 
     def _parse_json(self, body: Dict[str, Any]) -> bytes:
         '''Parse the Dict[str, Any] body to a stringify JSON bytes.

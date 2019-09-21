@@ -75,6 +75,9 @@ class Producer:
             ProducerError: If the type of exchange requires a routing_key.
         '''
 
+        if not self.props.content_type:
+            self.props.content_type = message.content_type
+
         chann: Channel = await self.symbios.channel
 
         if self.exchange.exchange != '' and self.exchange.exchange is not None:

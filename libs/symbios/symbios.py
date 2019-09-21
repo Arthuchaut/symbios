@@ -132,6 +132,9 @@ class Symbios(Connector):
             arguments (ArgumentsType): Some properties to the consumer.
                 Default to None.
             consumer_tag (str): The consumer identity. Default to None.
+            ephemeral (bool): If the listener is ephemeral or not.
+                If True, the listener will be deleted to the middleware
+                stack after the consuming. Default to False.
         '''
 
         midd: Middleware = Middleware(task, ephemeral=ephemeral)
