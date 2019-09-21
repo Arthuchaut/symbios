@@ -15,6 +15,8 @@ An asynchronous messaging queue manager based on [aiormq](https://github.com/mos
     - [Emit Message](#emit-message)
     - [Listen Message](#listen-message)
     - [RPC Pattern](#rpc-pattern)
+      - [Server Side](#server-side)
+      - [Client Side](#client-side)
   - [Documentation](#documentation)
     - [Development Guide](#development-guide)
     - [Deployment Guide](#deployment-guide)
@@ -48,7 +50,6 @@ async def main() -> None:
     broker: Symbios = Symbios(host='broker.domain.name.or.ip.addr.dev')
 
     message: SendingMessage = SendingMessage('Lapin !')
-
     await broker.emit(message, routing_key='my_queue')
 
 if __name__ == '__main__':
@@ -70,7 +71,6 @@ async def main() -> None:
     broker: Symbios = Symbios(host='broker.domain.name.or.ip.addr.dev')
     
     queue: Queue = Queue('my_queue')
-
     await broker.listen(on_receive_handler, queue=queue, no_ack=True)
 
 if __name__ == '__main__':
@@ -80,6 +80,42 @@ if __name__ == '__main__':
 
 ### RPC Pattern
 
+The RPC pattern (called *Remote Procedure Call*) is a procedure to send a request to the broker and waiting for its response back.
+
+#### Server Side
+
+```python
+from symbios import Symbios, Props
+from symbios.message import SendingMessage
+
+async def on_receive_handler(broker: Symbios, message: IncomingMessage) -> None:
+    indentity: Dict[str, Union[str, int]] = message.deserialized
+
+    response: str = (f'Hi, {identity["firstname"]} {identity["lastname"]}. '
+                     f'You look pretty young for {identity["age"]} years old.')
+    
+    sen_message: SendingMessage = SendingMessage(response)
+
+    await broker.emit(
+        sen_message, 
+        routing_key=message.props.reply_to, 
+        props=Props(correlation_id=message.props.correlation_id)
+    )
+
+async def main() -> None:
+    broker: Symbios = Symbios(host='broker.domain.name.or.ip.addr.dev')
+
+    queue: Queue = Queue('my_queue')
+    await broker.declare_queue(queue)
+    broker.listen(on_receive_handler, queue=queue, no_ack=True)
+
+if __name__ == '__main__':
+    loop: EventLoop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+```
+
+#### Client Side
+
 ```python
 from symbios import Symbios
 from symbios.message import IncomingMessage, SendingMessage
@@ -87,10 +123,13 @@ from symbios.message import IncomingMessage, SendingMessage
 async def main() -> None:
     broker: Symbios = Symbios(host='broker.domain.name.or.ip.addr.dev')
 
-    sen_message: SendingMessage = SendingMessage({'info_key': 200, 'other_key': 'Lapin !'})
+    sen_message: SendingMessage = SendingMessage({
+        'firstname ': 'Keanu', 
+        'lastname': 'Reeves', 
+        'age': 55
+    })
 
     inc_message: IncomingMessage = await broker.rpc.call(sen_message, routing_key='my_queue')
-
     print(f'Received message that contains: {inc_message.deserialized}')
 
 if __name__ == '__main__':
