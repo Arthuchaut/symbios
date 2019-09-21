@@ -21,10 +21,15 @@ class Middleware:
             stack in the middleware queue.
     '''
 
+    BEFORE_PROCESS: int = 0
+    DURING_PROCESS: int = 1
+    AFTER_PROCESS: int = 2
+
     def __init__(
         self,
         task: Callable[[object, IncomingMessage], Awaitable[Any]],
         *,
+        priority: int = DURING_PROCESS,
         ephemeral: bool = False
     ):
         '''The Middleware initializer.
@@ -35,6 +40,7 @@ class Middleware:
         '''
 
         self.task: Callable[[object, IncomingMessage], Awaitable[Any]] = task
+        self.priority: int = priority
         self.ephemeral: bool = ephemeral
 
 
@@ -51,7 +57,7 @@ class MiddlewareQueue:
         '''The MiddlewareQueue initializer.
         '''
 
-        self._stack: List[Middleware] = []
+        self._stack: Dict[int, List[Middleware]] = {0: [], 1: [], 2: []}
 
     def append(self, midd: Middleware) -> None:
         '''Stack the middleware in the queue.
@@ -60,7 +66,7 @@ class MiddlewareQueue:
             midd (Middleware): The middleware to stack.
         '''
 
-        self._stack.append(midd)
+        self._stack[midd.priority].append(midd)
 
     async def run_until_end(
         self, symbios: object, message: IncomingMessage
@@ -74,10 +80,11 @@ class MiddlewareQueue:
         '''
 
         # A temporary solution before implement a much optimized mechanisme.
-        tmp_queue: List[Middleware] = copy(self._stack)
+        tmp_stack: List[Middleware] = copy(self._stack)
 
-        for midd in tmp_queue:
-            await midd.task(symbios, message)
+        for priority_queue in tmp_stack:
+            for midd in tmp_stack[priority_queue]:
+                await midd.task(symbios, message)
 
-            if midd.ephemeral:
-                self._stack.remove(midd)
+                if midd.ephemeral:
+                    self._stack[priority_queue].remove(midd)
