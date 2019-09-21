@@ -162,4 +162,4 @@ class Symbios(Connector):
             midd (Middleware): The middleware to append to the queue.
         '''
 
-        ...
+        self._middleware_queue.append(midd)
