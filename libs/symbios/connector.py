@@ -7,6 +7,7 @@
 '''
 
 import asyncio
+from asyncio.events import AbstractEventLoop
 
 import aiormq
 from aiormq import Connection, Channel
@@ -30,7 +31,7 @@ class Connector:
         _user (str): The username to connect.
         _password (str): The password to connect.
         _connection (Connection): The broker established connection.
-        event_loop (EventLoop): The asyncio event loop.
+        event_loop (AbstractEventLoop): The asyncio event loop.
             Try to get the running event loop, else create a new instance.
         _url (str): The built url for establishing the broker connection.
         connection (Connection): The broker established connection.
@@ -86,14 +87,14 @@ class Connector:
         self._connection: Connection = None
 
     @property
-    def event_loop(self) -> EventLoop:
+    def event_loop(self) -> AbstractEventLoop:
         '''Try to retrieve the current event loop if exists.
 
         Returns:
-            EventLoop: The asyncio event loop.
+            AbstractEventLoop: The asyncio event loop.
         '''
 
-        loop: EventLoop = None
+        loop: AbstractEventLoop = None
 
         try:
             loop = asyncio.get_running_loop()

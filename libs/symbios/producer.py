@@ -10,7 +10,6 @@ from typing import Awaitable, Any
 
 from . import Props, Channel
 from .message import SendingMessage
-from .symbios import Symbios
 from .exchange import Exchange
 
 
@@ -33,7 +32,7 @@ class Producer:
     def __init__(
         self,
         *,
-        symbios: Symbios,
+        symbios: object,
         exchange: Exchange = Exchange(),
         routing_key: str = None,
         props: Props = Props(),
@@ -56,7 +55,7 @@ class Producer:
                 Default to False.
         '''
 
-        self.symbios: Symbios = symbios
+        self.symbios: object = symbios
         self.exchange: Exchange = exchange
         self.routing_key: str = routing_key
         self.props: Props = props

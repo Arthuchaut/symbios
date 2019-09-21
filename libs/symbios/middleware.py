@@ -7,22 +7,25 @@
 '''
 
 from typing import List, Callable, Awaitable, Any
+from copy import copy
 
 from . import DeliveredMessage
 from .message import IncomingMessage
-from .symbios import Symbios
 
 
 class Middleware:
     '''Create a middleware from an awaitable.
 
     Attributes:
-        task (Callable[[Symbions, IncMessage], Awaitable[Any]]): The task to
+        task (Callable[[Symbios, IncMessage], Awaitable[Any]]): The task to
             stack in the middleware queue.
     '''
 
     def __init__(
-        self, task: Callable[[Symbios, IncomingMessage], Awaitable[Any]]
+        self,
+        task: Callable[[object, IncomingMessage], Awaitable[Any]],
+        *,
+        ephemeral: bool = False
     ):
         '''The Middleware initializer.
 
@@ -31,7 +34,8 @@ class Middleware:
                 The task to stack in the middleware queue.
         '''
 
-        self.task = task
+        self.task: Callable[[object, IncomingMessage], Awaitable[Any]] = task
+        self.ephemeral: bool = ephemeral
 
 
 class MiddlewareQueue:
@@ -59,7 +63,7 @@ class MiddlewareQueue:
         self._stack.append(midd)
 
     async def run_until_end(
-        self, symbios: Symbios, message: IncomingMessage
+        self, symbios: object, message: IncomingMessage
     ) -> Awaitable[Any]:
         '''Run all middlewares in queue.
 
@@ -69,5 +73,11 @@ class MiddlewareQueue:
             message (DeliveredMessage): The aiormq delivered message.
         '''
 
-        for midd in self._stack:
+        # A temporary solution before implement a much optimized mechanisme.
+        tmp_queue: List[Middleware] = copy(self._stack)
+
+        for midd in tmp_queue:
             await midd.task(symbios, message)
+
+            if midd.ephemeral:
+                self._stack.remove(midd)

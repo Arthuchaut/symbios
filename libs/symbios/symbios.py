@@ -1,21 +1,22 @@
 '''
 @desc    The main class of the Symbios library.
 @author  arthuchaut <arthuchaut@gmail.com>
-@version 0.1.0
+@version 0.2.0
 @date    2019-09-20
 @note    0.1.0 (2019-09-20): Writed the first drafts.
+@note    0.2.0 (2019-09-21): Implemented the class methods.
 '''
 
-from typing import Dict, Union
+from typing import Dict, Union, Callable, Awaitable, Any
 
-from . import Props
+from . import Props, ArgumentsType
 from .connector import Connector
-from .consumer import Consumer
-from .producer import Producer
 from .queue import Queue
 from .exchange import Exchange
 from .message import IncomingMessage, SendingMessage
 from .middleware import Middleware, MiddlewareQueue
+from .producer import Producer
+from .consumer import Consumer
 
 
 class Symbios(Connector):
@@ -24,7 +25,7 @@ class Symbios(Connector):
     Allows to communicate with the broker.
 
     Attributes:
-        middleware_queue (MiddlewareQueue): The middleware queue.
+        _middleware_queue (MiddlewareQueue): The middleware queue.
     '''
 
     def __init__(self, **kwargs: Dict[str, Union[str, int]]):
@@ -35,7 +36,8 @@ class Symbios(Connector):
                 See the Connector __init__ documentation for more information.
         '''
 
-        ...
+        super().__init__(**kwargs)
+        self._middleware_queue: MiddlewareQueue = MiddlewareQueue()
 
     async def emit(
         self,
@@ -63,11 +65,20 @@ class Symbios(Connector):
                 Default to False.
         '''
 
-        ...
+        producer: Producer = Producer(
+            symbios=self,
+            exchange=exchange,
+            routing_key=routing_key,
+            props=props,
+            mandatory=mandatory,
+            immediate=immediate,
+        )
+
+        await producer.emit(message)
 
     async def listen(
         self,
-        task: Callable[[Symbios, IncomingMessage], Awaitable[Any]],
+        task: Callable[[object, IncomingMessage], Awaitable[Any]],
         *,
         queue: Queue = Queue(),
         no_ack: bool = False,
@@ -90,7 +101,19 @@ class Symbios(Connector):
             consumer_tag (str): The consumer identity. Default to None.
         '''
 
-        ...
+        midd: Middleware = Middleware(task, ephemeral=True)
+        self._middleware_queue.append(midd)
+
+        consumer: Consumer = Consumer(
+            symbios=self,
+            queue=queue,
+            no_ack=no_ack,
+            exclusive=exclusive,
+            arguments=arguments,
+            consumer_tag=consumer_tag,
+        )
+
+        await consumer.listen(self._middleware_queue.run_until_end)
 
     async def call(
         self,

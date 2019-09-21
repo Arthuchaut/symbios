@@ -10,7 +10,6 @@ from typing import Callable, Awaitable, Any
 
 from . import Channel, DeliveredMessage, ArgumentsType
 from .message import IncomingMessage
-from .symbios import Symbios
 from .queue import Queue
 
 
@@ -26,8 +25,8 @@ class Consumer:
         exclusive (bool): Only one consumer registered to the targeted queue.
         arguments (ArgumentsType): Some properties to the consumer.
         consumer_tag (str): The consumer identity.
-        task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): The task
-            to call when a message arrives.
+        task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): 
+            The task to call when a message arrives.
         declare_ok (Any): The future of the declared queue.
         consume_ok (Any): The future of the consumed queue.
     '''
@@ -35,7 +34,7 @@ class Consumer:
     def __init__(
         self,
         *,
-        symbios: Symbios,
+        symbios: object,
         queue: Queue = Queue(),
         no_ack: bool = False,
         exclusive: bool = False,
@@ -56,24 +55,25 @@ class Consumer:
             consumer_tag (str): The consumer identity. Default to None.
         '''
 
-        self.symbios: Symbios = symbios
+        self.symbios: object = symbios
         self.queue: Queue = queue
         self.no_ack: bool = no_ack
         self.exclusive: bool = exclusive
         self.arguments: ArgumentsType = arguments
         self.consumer_tag: str = consumer_tag
-        self.task: Callable[[Symbios, IncomingMessage], Awaitable[Any]] = None
+        self.task: Callable[[object, IncomingMessage], Awaitable[Any]] = None
         self.declare_ok: Any = None
         self.consume_ok: Any = None
 
     async def listen(
-        self, task: Callable[[Symbios, IncomingMessage], Awaitable[Any]]
+        self, task: Callable[[object, IncomingMessage], Awaitable[Any]]
     ) -> None:
         '''Listen a queue.
 
         Args:
-            task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): The
-                task to call when a message arrives.
+            task (Callable[[Symbios, IncomingMessage], 
+                Awaitable[Any]]): 
+                The task to call when a message arrives.
         '''
 
         self.task = task
