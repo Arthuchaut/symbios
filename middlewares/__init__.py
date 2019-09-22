@@ -1,3 +1,2 @@
 from .serializer_middleware import SerializerMiddleware
 from .deserializer_middleware import DeserializerMiddleware
-from .content_type_middleware import ContentTypeMiddleware
