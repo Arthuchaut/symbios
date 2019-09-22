@@ -77,9 +77,7 @@ class RPC:
         queue: Queue = Queue(self._cid, exclusive=True, auto_delete=True)
 
         await self.symbios.declare_queue(queue)
-        await self.symbios.listen(
-            self._on_reply, queue=queue, ephemeral=True, no_ack=True
-        )
+        await self.symbios.listen(self._on_reply, queue=queue, no_ack=True)
 
         await self.symbios.emit(
             message,

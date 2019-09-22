@@ -1,90 +1,126 @@
 '''
-@desc    The Symbios middleware manager class.
+@desc    The Symbios middleware manager classes.
 @author  arthuchaut <arthuchaut@gmail.com>
 @version 0.1.0
-@date    2019-09-20
-@note    0.1.0 (2019-09-20): Writed the first drafts.
+@date    2019-09-22
+@note    0.1.0 (2019-09-22): Writed the first drafts.
 '''
 
-from typing import List, Callable, Awaitable, Any
-from copy import copy
+from typing import Union, List
+from enum import Enum
+from abc import ABC, abstractmethod
 
-from . import DeliveredMessage
-from .message import IncomingMessage
+from .message import IncomingMessage, SendingMessage
 
 
-class Middleware:
-    '''Create a middleware from an awaitable.
+class Event(Enum):
+    '''The Event enumeration declaration.
+
+    Allows to define the ownership of the event of a middleware.
 
     Attributes:
-        task (Callable[[Symbios, IncMessage], Awaitable[Any]]): The task to
-            stack in the middleware queue.
+        ON_EMIT (int): Refer to the emitter.
+        ON_LISTEN (int): Refer to the listener.
     '''
 
-    BEFORE_PROCESS: int = 0
-    DURING_PROCESS: int = 1
-    AFTER_PROCESS: int = 2
-
-    def __init__(
-        self,
-        task: Callable[[object, IncomingMessage], Awaitable[Any]],
-        *,
-        priority: int = DURING_PROCESS,
-        ephemeral: bool = False
-    ):
-        '''The Middleware initializer.
-
-        Args:
-            task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): 
-                The task to stack in the middleware queue.
-        '''
-
-        self.task: Callable[[object, IncomingMessage], Awaitable[Any]] = task
-        self.priority: int = priority
-        self.ephemeral: bool = ephemeral
+    ON_EMIT: int = 0
+    ON_LISTEN: int = 1
 
 
-class MiddlewareQueue:
-    '''The middleware queue manager.
+class MiddlewareABC(ABC):
+    '''The MiddlewareABC declaration.
 
-    Manage middlewares and run all tasks when a consume event are triggered.
+    Abstract class for defining middleware.
 
     Attributes:
-        _stack (List[Middleware]): The Middleware queue.
+        event (int): The event associated with middleware.
+    '''
+
+    def __init__(self, event: int):
+        '''The MiddlewareABC initializer.
+
+        Args:
+            event (int): The event associated with middleware.
+        '''
+
+        self.event: int = event
+
+    @abstractmethod
+    async def execute(
+        self, symbios: object, message: Union[IncomingMessage, SendingMessage]
+    ) -> None:
+        '''Abstract method that contains the middleware processes.
+
+        Args:
+            symbios (Symbios): The Symbios instance.
+            message (Union[IncomingMessage, SendingMessage]): 
+                The received or sending message.
+        '''
+
+        pass
+
+
+class MiddlewareLibrary:
+    '''The MiddlewareLibrary class declaration.
+
+    Allows to register the defined middlewares.
+
+    Attributes:
+        _library (Dict[int, List[MiddlewareABC]]): The library that 
+            contains all declared middlewares.
     '''
 
     def __init__(self):
-        '''The MiddlewareQueue initializer.
+        '''The MiddlewareLibrary initializer.
         '''
 
-        self._stack: Dict[int, List[Middleware]] = {0: [], 1: [], 2: []}
+        self._library: Dict[int, List[MiddlewareABC]] = {
+            Event.ON_EMIT: [],
+            Event.ON_LISTEN: [],
+        }
 
-    def append(self, midd: Middleware) -> None:
-        '''Stack the middleware in the queue.
+    def apprend(self, midd: MiddlewareABC) -> None:
+        '''Register a middleware to the library.
 
         Args:
-            midd (Middleware): The middleware to stack.
+            midd (MiddlewareABC): The middleware instance to register.
+
+        Raises:
+            MiddlewareLibraryError: If the midd argument is not a subclass
+                of MiddlewareABC.
         '''
 
-        self._stack[midd.priority].append(midd)
+        if not isinstance(midd, MiddlewareABC):
+            raise MiddlewareLibraryError(
+                f'Expected an instance of MiddlewareABC, {type(midd)} given.'
+            )
+
+        self._library[midd.event].append(midd)
 
     async def run_until_end(
-        self, symbios: object, message: IncomingMessage
-    ) -> Awaitable[Any]:
-        '''Run all middlewares in queue.
-
-        This method have to be called by the aiormq consumer.
+        self, symbios: object, message: SendingMessage, event: int
+    ) -> None:
+        '''Call all defined middlewares associated the event specified.
 
         Args:
-            message (DeliveredMessage): The aiormq delivered message.
+            symbios (Symbios): The Symbios instance.
+            message (Union[IncomingMessage, SendingMessage]): The 
+                listener/emiter message.
         '''
 
-        # A temporary solution before implement a much optimized mechanisme.
-        tmp_stack: List[Middleware] = copy(self._stack)
+        for midd in self._library[event]:
+            await midd.execute(symbios, message)
 
-        for priority_queue in tmp_stack:
-            for midd in tmp_stack[priority_queue]:
-                await midd.task(symbios, message)
 
-                if midd.ephemeral:
-                    self._stack[priority_queue].remove(midd)
+class MiddlewareLibraryError(Exception):
+    '''The MiddlewareLibraryError exception class.
+    '''
+
+    def __init__(self, message: str):
+        '''The MiddlewareLibraryError initializer.
+
+        Args:
+            message (str): The message to raise.
+        '''
+
+        super().__init__(message)

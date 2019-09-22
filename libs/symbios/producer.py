@@ -11,6 +11,7 @@ from typing import Awaitable, Any
 from . import Props, Channel
 from .message import SendingMessage
 from .exchange import Exchange
+from .middleware import MiddlewareLibrary, Event
 
 
 class Producer:
@@ -27,6 +28,7 @@ class Producer:
         mandatory (bool): Tell if the message is important or not.
         immediate (bool): Bypass the exchange type rules and send
             the message to the receiver directly if True.
+        _midd_library (MiddlewareLibrary): The Symbios middleware library.        
     '''
 
     def __init__(
@@ -38,6 +40,7 @@ class Producer:
         props: Props = Props(),
         mandatory: bool = False,
         immediate: bool = False,
+        midd_library: MiddlewareLibrary = None,
     ):
         '''The Producer initializer.
 
@@ -53,6 +56,8 @@ class Producer:
             immediate (bool): Bypass the exchange type rules and send
                 the message to the receiver directly if True.
                 Default to False.
+            _midd_library (MiddlewareLibrary): The Symbios middleware library.
+                Default to None.            
         '''
 
         self.symbios: object = symbios
@@ -61,12 +66,14 @@ class Producer:
         self.props: Props = props
         self.mandatory: bool = mandatory
         self.immediate: bool = immediate
+        self._midd_library: MiddlewareLibrary = midd_library
 
     async def emit(self, message: SendingMessage) -> None:
         '''Emit a message to the broker.
 
         Important: Make sure that the destination queue(s) are correctly 
         declared by a Consumer before sending a message.
+        Call all associated middlewares before emit the message.
 
         Args:
             message (SendingMessage): The message to send.
@@ -92,6 +99,11 @@ class Producer:
                     f'Exchange type {self.exchange.exchange_type} '
                     f'require a routing_key.'
                 )
+            )
+
+        if not self._midd_library is None:
+            await self._midd_library.run_until_end(
+                self.symbios, message, Event.ON_EMIT
             )
 
         await chann.basic_publish(

@@ -14,7 +14,7 @@ from .connector import Connector
 from .queue import Queue
 from .exchange import Exchange
 from .message import IncomingMessage, SendingMessage
-from .middleware import Middleware, MiddlewareQueue
+from .middleware import MiddlewareLibrary, MiddlewareABC
 from .producer import Producer
 from .consumer import Consumer
 from .rpc import RPC
@@ -26,7 +26,8 @@ class Symbios(Connector):
     Allows to communicate with the broker.
 
     Attributes:
-        _middleware_queue (MiddlewareQueue): The middleware queue.
+        _midd_library (MiddlewareLibrary): The middleware library.
+        rpc (RPC): The RPC instance.
     '''
 
     def __init__(self, **kwargs: Dict[str, Union[str, int]]):
@@ -39,7 +40,7 @@ class Symbios(Connector):
 
         super().__init__(**kwargs)
 
-        self._middleware_queue: MiddlewareQueue = MiddlewareQueue()
+        self._midd_library: MiddlewareLibrary = MiddlewareLibrary()
         self.rpc: RPC = RPC(self)
 
     async def declare_queue(self, queue: Queue) -> Union[GetEmpty, GetOk]:
@@ -105,6 +106,7 @@ class Symbios(Connector):
             props=props,
             mandatory=mandatory,
             immediate=immediate,
+            midd_library=self._midd_library,
         )
 
         await producer.emit(message)
@@ -118,7 +120,6 @@ class Symbios(Connector):
         exclusive: bool = False,
         arguments: ArgumentsType = None,
         consumer_tag: str = None,
-        ephemeral: bool = False,
     ) -> None:
         '''Listen a message from a broker queue.
 
@@ -133,13 +134,7 @@ class Symbios(Connector):
             arguments (ArgumentsType): Some properties to the consumer.
                 Default to None.
             consumer_tag (str): The consumer identity. Default to None.
-            ephemeral (bool): If the listener is ephemeral or not.
-                If True, the listener will be deleted to the middleware
-                stack after the consuming. Default to False.
         '''
-
-        midd: Middleware = Middleware(task, ephemeral=ephemeral)
-        self._middleware_queue.append(midd)
 
         consumer: Consumer = Consumer(
             symbios=self,
@@ -148,18 +143,20 @@ class Symbios(Connector):
             exclusive=exclusive,
             arguments=arguments,
             consumer_tag=consumer_tag,
+            midd_library=self._midd_library,
         )
 
-        await consumer.listen(self._middleware_queue.run_until_end)
+        await consumer.listen(task)
 
-    def use(self, midd: Middleware) -> None:
+    def use(self, midd: MiddlewareABC) -> None:
         '''Implement a new middleware for the consumer.
 
         All middlewares will be called before the main task.
         The IncomingMessage could be modified in.
 
         Args:
-            midd (Middleware): The middleware to append to the queue.
+            midd (MiddlewareABC): The middleware instance to register to the
+                middleware library.
         '''
 
-        self._middleware_queue.append(midd)
+        self._midd_library.apprend(midd)

@@ -11,6 +11,7 @@ from typing import Callable, Awaitable, Any
 from . import Channel, DeliveredMessage, ArgumentsType
 from .message import IncomingMessage
 from .queue import Queue
+from .middleware import MiddlewareLibrary, Event
 
 
 class Consumer:
@@ -29,6 +30,7 @@ class Consumer:
             The task to call when a message arrives.
         declare_ok (Any): The future of the declared queue.
         consume_ok (Any): The future of the consumed queue.
+        _midd_library (MiddlewareLibrary): The Symbios middleware library.
     '''
 
     def __init__(
@@ -39,7 +41,8 @@ class Consumer:
         no_ack: bool = False,
         exclusive: bool = False,
         arguments: ArgumentsType = None,
-        consumer_tag: str = None
+        consumer_tag: str = None,
+        midd_library: MiddlewareLibrary = None
     ):
         '''The Consumer initializer.
 
@@ -53,6 +56,8 @@ class Consumer:
             arguments (ArgumentsType): Some properties to the consumer.
                 Default to None.
             consumer_tag (str): The consumer identity. Default to None.
+            _midd_library (MiddlewareLibrary): The Symbios middleware library.
+                Default to None.
         '''
 
         self.symbios: object = symbios
@@ -61,18 +66,18 @@ class Consumer:
         self.exclusive: bool = exclusive
         self.arguments: ArgumentsType = arguments
         self.consumer_tag: str = consumer_tag
-        self.task: Callable[[object, IncomingMessage], Awaitable[Any]] = None
+        self.task: Callable[[object, IncomingMessage], None] = None
         self.declare_ok: Any = None
         self.consume_ok: Any = None
+        self._midd_library = midd_library
 
     async def listen(
-        self, task: Callable[[object, IncomingMessage], Awaitable[Any]]
+        self, task: Callable[[object, IncomingMessage], None]
     ) -> None:
         '''Listen a queue.
 
         Args:
-            task (Callable[[Symbios, IncomingMessage], 
-                Awaitable[Any]]): 
+            task (Callable[[Symbios, IncomingMessage], None]): 
                 The task to call when a message arrives.
         '''
 
@@ -90,15 +95,20 @@ class Consumer:
             consumer_tag=self.consumer_tag,
         )
 
-    async def _embed(self, message: DeliveredMessage) -> Awaitable[Any]:
+    async def _embed(self, message: DeliveredMessage) -> None:
         '''Embed the task with the Symbios parameters.
-
-        Call the task.
+        
+        Call the associated middlewares and then call the task.
 
         Args:
             message (DeliveredMessage): The aiormq message model.
         '''
 
         message: IncomingMessage = IncomingMessage(message)
+
+        if not self._midd_library is None:
+            await self._midd_library.run_until_end(
+                self.symbios, message, Event.ON_LISTEN
+            )
 
         await self.task(self.symbios, message)
