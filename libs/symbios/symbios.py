@@ -1,10 +1,11 @@
 '''
 @desc    The main class of the Symbios library.
 @author  arthuchaut <arthuchaut@gmail.com>
-@version 0.2.0
+@version 0.3.0
 @date    2019-09-20
 @note    0.1.0 (2019-09-20): Writed the first drafts.
 @note    0.2.0 (2019-09-21): Implemented the class methods.
+@note    0.3.0 (2019-09-22): Implemented some basic middlewares.
 '''
 
 from typing import Dict, Union, Callable, Awaitable, Any
@@ -14,10 +15,12 @@ from .connector import Connector
 from .queue import Queue
 from .exchange import Exchange
 from .message import IncomingMessage, SendingMessage
-from .middleware import MiddlewareLibrary, MiddlewareABC
+from .middleware import MiddlewareLibrary, MiddlewareABC, Event
 from .producer import Producer
 from .consumer import Consumer
 from .rpc import RPC
+
+from middlewares import SerializerMiddleware, DeserializerMiddleware
 
 
 class Symbios(Connector):
@@ -42,6 +45,14 @@ class Symbios(Connector):
 
         self._midd_library: MiddlewareLibrary = MiddlewareLibrary()
         self.rpc: RPC = RPC(self)
+        self._init_standard_middlewares()
+
+    def _init_standard_middlewares(self) -> None:
+        '''Implement some basic middlewares.
+        '''
+
+        self.use(SerializerMiddleware(Event.ON_EMIT))
+        self.use(DeserializerMiddleware(Event.ON_LISTEN))
 
     async def declare_queue(self, queue: Queue) -> Union[GetEmpty, GetOk]:
         '''Declare a queue to the broker.

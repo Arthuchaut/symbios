@@ -6,7 +6,7 @@
 @note    0.1.0 (2019-09-20): Writed the first drafts.
 '''
 
-from typing import Awaitable, Any
+from typing import Awaitable, Any, Dict
 
 from . import Props, Channel
 from .message import SendingMessage
@@ -20,6 +20,8 @@ class Producer:
     Allows to emit a message to the borker.
 
     Attributes:
+        _CONTENT_TYPES (Dict[Any, str]): The association of types 
+            with their content-type.
         symbios (Symbios): The Symbios instance.
         exchange (str): the exchange name to bind with the exchange type.
         exchange_type (str): The exhange type.
@@ -30,6 +32,14 @@ class Producer:
             the message to the receiver directly if True.
         _midd_library (MiddlewareLibrary): The Symbios middleware library.        
     '''
+
+    _CONTENT_TYPES: Dict[Any, str] = {
+        str: 'text/plain',
+        bool: 'text/plain',
+        int: 'text/plain',
+        float: 'text/plain',
+        dict: 'application/json',
+    }
 
     def __init__(
         self,
@@ -82,9 +92,6 @@ class Producer:
             ProducerError: If the type of exchange requires a routing_key.
         '''
 
-        if not self.props.content_type:
-            self.props.content_type = message.content_type
-
         chann: Channel = await self.symbios.channel
 
         if self.exchange.exchange != '' and self.exchange.exchange is not None:
@@ -101,6 +108,9 @@ class Producer:
                 )
             )
 
+        if not self.props.content_type:
+            self.props.content_type = self._determine_content_type(message)
+
         if not self._midd_library is None:
             await self._midd_library.run_until_end(
                 self.symbios, message, Event.ON_EMIT
@@ -114,6 +124,25 @@ class Producer:
             immediate=self.immediate,
             mandatory=self.mandatory,
         )
+
+    def _determine_content_type(self, message: SendingMessage) -> str:
+        '''Try to determine the content-type via the message type.
+
+        Args:
+            message (SendingMessage): The message to send.
+
+        Returns:
+            str: The content_type retreived or ''.
+        '''
+
+        content_type: str = ''
+
+        try:
+            content_type = Producer._CONTENT_TYPES[type(message.body)]
+        except KeyError as e:
+            pass
+
+        return content_type
 
 
 class ProducerError(Exception):
