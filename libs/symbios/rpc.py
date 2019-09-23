@@ -8,13 +8,14 @@
 
 from typing import Dict, Callable, List
 from uuid import uuid4
-from asyncio import Task
+from asyncio import Task, Future
 
 import aiormq
 
 from . import Props
 from .message import IncomingMessage, SendingMessage
 from .queue import Queue
+from .timeout import Timeout
 
 
 class RPC:
@@ -24,7 +25,7 @@ class RPC:
 
     Attributes:
         symbios (Symbios): A Symbios instance.
-        _future (Any): The future response back.
+        _future (Future): The future response back.
         _ack (bool): Allows to know if the response was sent.
         _reply_queue (str): The queue to tell the broker where to reply.
     '''
@@ -37,7 +38,7 @@ class RPC:
         '''
 
         self.symbios: object = symbios
-        self._futures: Dict[str, Callable] = {}
+        self._futures: Dict[str, Future] = {}
         self._reply_queue: str = None
 
     async def _on_reply(
@@ -52,13 +53,15 @@ class RPC:
         '''
 
         try:
-            future: Any = self._futures.pop(message.props.correlation_id)
+            future, countdown = self._futures.pop(message.props.correlation_id)
+
+            countdown.stop()
             future.set_result(message)
         except Exception as e:
             raise RPCError(f'Expected a correlation_id from the server.')
 
     async def call(
-        self, message: SendingMessage, *, routing_key: str
+        self, message: SendingMessage, *, routing_key: str, timeout: int = None
     ) -> IncomingMessage:
         '''The calling procedure.
 
@@ -67,14 +70,19 @@ class RPC:
         Args:
             message (SendingMessage): The message to send.
             routing_key (str): The routing key to emit the message.
+            timeout (int): The time limite (in second) for the timeout.
+                Raised a TimeoutElapsed exception if the countdown has
+                expired. Default to None.
 
         Returns:
             IncomingMessage: The broker response back.
         '''
 
         cid: str = str(uuid4())
-        future: Any = self.symbios.event_loop.create_future()
-        self._futures[cid] = future
+        countdown: Timeout = Timeout(self.symbios.event_loop)
+        future: Future = self.symbios.event_loop.create_future()
+
+        self._futures[cid] = (future, countdown)
 
         queue: Queue = Queue(cid, auto_delete=True)
 
@@ -86,6 +94,9 @@ class RPC:
             routing_key=routing_key,
             props=Props(correlation_id=cid, reply_to=queue.queue),
         )
+
+        if timeout:
+            await countdown.start(timeout)
 
         return await future
 

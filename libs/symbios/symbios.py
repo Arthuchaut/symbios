@@ -131,7 +131,6 @@ class Symbios(Connector):
         exclusive: bool = False,
         arguments: ArgumentsType = None,
         consumer_tag: str = None,
-        timeout: int = None,
     ) -> None:
         '''Listen a message from a broker queue.
 
@@ -146,8 +145,6 @@ class Symbios(Connector):
             arguments (ArgumentsType): Some properties to the consumer.
                 Default to None.
             consumer_tag (str): The consumer identity. Default to None.
-            timeout (int): The optional timeout (in seconds) that raise 
-                a TimeoutElapsed if no message consumed after its delay.
         '''
 
         consumer: Consumer = Consumer(
@@ -158,7 +155,6 @@ class Symbios(Connector):
             arguments=arguments,
             consumer_tag=consumer_tag,
             midd_library=self._midd_library,
-            timeout=timeout,
         )
 
         await consumer.listen(task)

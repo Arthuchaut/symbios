@@ -14,7 +14,6 @@ from . import Channel, DeliveredMessage, ArgumentsType
 from .message import IncomingMessage
 from .queue import Queue
 from .middleware import MiddlewareLibrary, Event
-from .timeout import Timeout
 
 
 class Consumer:
@@ -34,9 +33,6 @@ class Consumer:
         declare_ok (Any): The future of the declared queue.
         consume_ok (Any): The future of the consumed queue.
         _midd_library (MiddlewareLibrary): The Symbios middleware library.
-        _limit (int): The limite time for the timeout.
-        _timeout (Timeout): The Timeout class for add a delay to the
-            listener.
     '''
 
     def __init__(
@@ -49,7 +45,6 @@ class Consumer:
         arguments: ArgumentsType = None,
         consumer_tag: str = None,
         midd_library: MiddlewareLibrary = None,
-        timeout: int = None,
     ):
         '''The Consumer initializer.
 
@@ -65,8 +60,6 @@ class Consumer:
             consumer_tag (str): The consumer identity. Default to None.
             midd_library (MiddlewareLibrary): The Symbios middleware library.
                 Default to None.
-            timeout (int): The time limite (in second) for the timeout.
-                Default to None.
         '''
 
         self.symbios: object = symbios
@@ -79,8 +72,6 @@ class Consumer:
         self.declare_ok: Any = None
         self.consume_ok: Any = None
         self._midd_library = midd_library
-        self._limit: int = timeout
-        self._timeout: Timeout = Timeout(self.symbios.event_loop)
 
     async def listen(
         self, task: Callable[[object, IncomingMessage], None]
@@ -106,9 +97,6 @@ class Consumer:
             consumer_tag=self.consumer_tag,
         )
 
-        if self._limit:
-            await self._timeout.start(self._limit)
-
     async def _embed(self, message: DeliveredMessage) -> None:
         '''Embed the task with the Symbios parameters.
         
@@ -117,8 +105,6 @@ class Consumer:
         Args:
             message (DeliveredMessage): The aiormq message model.
         '''
-
-        self._timeout.stop()
 
         message: IncomingMessage = IncomingMessage(message)
 
