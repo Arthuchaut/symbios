@@ -28,7 +28,7 @@ class Consumer:
         exclusive (bool): Only one consumer registered to the targeted queue.
         arguments (ArgumentsType): Some properties to the consumer.
         consumer_tag (str): The consumer identity.
-        task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): 
+        task (Callable[[Symbios, IncomingMessage], None]): 
             The task to call when a message arrives.
         declare_ok (Any): The future of the declared queue.
         consume_ok (Any): The future of the consumed queue.

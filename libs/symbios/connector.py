@@ -89,6 +89,9 @@ class Connector:
     @property
     def event_loop(self) -> AbstractEventLoop:
         '''Try to retrieve the current event loop if exists.
+        
+        Retreive the running event loop. If it doesn't exists yet,
+        then create a new event loop.
 
         Returns:
             AbstractEventLoop: The asyncio event loop.
