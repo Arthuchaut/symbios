@@ -170,4 +170,4 @@ class Symbios(Connector):
                 middleware library.
         '''
 
-        self._midd_library.apprend(midd)
+        self._midd_library.append(midd)

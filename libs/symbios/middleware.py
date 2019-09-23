@@ -79,7 +79,7 @@ class MiddlewareLibrary:
             Event.ON_LISTEN: [],
         }
 
-    def apprend(self, midd: MiddlewareABC) -> None:
+    def append(self, midd: MiddlewareABC) -> None:
         '''Register a middleware to the library.
 
         Args:
