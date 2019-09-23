@@ -6,8 +6,9 @@
 @note    0.1.0 (2019-09-21): Writed the first drafts.
 '''
 
-from typing import Dict, Callable
+from typing import Dict, Callable, List
 from uuid import uuid4
+from asyncio import Task
 
 import aiormq
 
@@ -25,7 +26,6 @@ class RPC:
         symbios (Symbios): A Symbios instance.
         _future (Any): The future response back.
         _ack (bool): Allows to know if the response was sent.
-        _cid (str): The correlation id for identify the caller.
         _reply_queue (str): The queue to tell the broker where to reply.
     '''
 
@@ -38,7 +38,6 @@ class RPC:
 
         self.symbios: object = symbios
         self._futures: Dict[str, Callable] = {}
-        self._cid: str = None
         self._reply_queue: str = None
 
     async def _on_reply(
@@ -52,8 +51,11 @@ class RPC:
             message (IncomingMessage): The message from the broker.
         '''
 
-        future: Any = self._futures.pop(self._cid)
-        future.set_result(message)
+        try:
+            future: Any = self._futures.pop(message.props.correlation_id)
+            future.set_result(message)
+        except Exception as e:
+            raise RPCError(f'Expected a correlation_id from the server.')
 
     async def call(
         self, message: SendingMessage, *, routing_key: str
@@ -70,11 +72,11 @@ class RPC:
             IncomingMessage: The broker response back.
         '''
 
-        self._cid = str(uuid4())
+        cid: str = str(uuid4())
         future: Any = self.symbios.event_loop.create_future()
-        self._futures[self._cid] = future
+        self._futures[cid] = future
 
-        queue: Queue = Queue(self._cid, exclusive=True, auto_delete=True)
+        queue: Queue = Queue(cid, auto_delete=True)
 
         await self.symbios.declare_queue(queue)
         await self.symbios.listen(self._on_reply, queue=queue, no_ack=True)
@@ -82,8 +84,30 @@ class RPC:
         await self.symbios.emit(
             message,
             routing_key=routing_key,
-            props=Props(correlation_id=self._cid, reply_to=queue.queue),
+            props=Props(correlation_id=cid, reply_to=queue.queue),
         )
 
         return await future
+
+    def multi_calls(self, calls: List[call]) -> List[Task]:
+        '''Process multi asynchronous RPC.
+
+        Args:
+            calls (List[RPC.call]): The list of RPC.call.
+
+        Returns:
+            List[Task]: The asyncio.Task list created from calls.
+        '''
+
+        task_queue: List[Task] = []
+
+        for call in calls:
+            task_queue.append(self.symbios.event_loop.create_task(call))
+
+        return task_queue
+
+
+class RPCError(Exception):
+    '''The RPCError exception class.
+    '''
 

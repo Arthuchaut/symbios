@@ -124,7 +124,7 @@ class Symbios(Connector):
 
     async def listen(
         self,
-        task: Callable[[object, IncomingMessage], Awaitable[Any]],
+        task: Callable[[object, IncomingMessage], None],
         *,
         queue: Queue = Queue(),
         no_ack: bool = False,
@@ -135,7 +135,7 @@ class Symbios(Connector):
         '''Listen a message from a broker queue.
 
         Args:
-            task (Callable[[Symbios, IncomingMessage], Awaitable[Any]]): The
+            task (Callable[[Symbios, IncomingMessage], None]): The
                 task to call when a message arrives.
             queue (str): The queue to consume. Default to Queue().
             no_ack (bool): If deliver an aknowlegment or not. 
