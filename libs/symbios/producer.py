@@ -50,7 +50,7 @@ class Producer:
         props: Props = Props(),
         mandatory: bool = False,
         immediate: bool = False,
-        midd_library: MiddlewareLibrary = None,
+        midd_library: MiddlewareLibrary,
     ):
         '''The Producer initializer.
 
@@ -66,8 +66,7 @@ class Producer:
             immediate (bool): Bypass the exchange type rules and send
                 the message to the receiver directly if True.
                 Default to False.
-            _midd_library (MiddlewareLibrary): The Symbios middleware library.
-                Default to None.            
+            _midd_library (MiddlewareLibrary): The Symbios middleware library.    
         '''
 
         self.symbios: object = symbios

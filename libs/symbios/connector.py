@@ -11,6 +11,7 @@ from asyncio.events import AbstractEventLoop
 
 import aiormq
 from aiormq import Connection, Channel
+from aiormq.exceptions import ProbableAuthenticationError
 
 
 class Connector:
@@ -125,14 +126,20 @@ class Connector:
         '''The broker connection.
         Create a connection if it isn't created yet.
 
+        Raises:
+            ConnectorError: If the connection couldn't be established.
+
         Returns:
             Connection: The broker connection.
         '''
 
         if self._connection is None:
-            self._connection = await aiormq.connect(
-                self._url, loop=self.event_loop
-            )
+            try:
+                self._connection = await aiormq.connect(
+                    self._url, loop=self.event_loop
+                )
+            except Exception as e:
+                raise ConnectorError(e)
 
         return self._connection
 
@@ -145,3 +152,8 @@ class Connector:
         '''
 
         return await (await self.connection).channel()
+
+
+class ConnectorError(Exception):
+    '''The ConnectorError exception class.
+    '''

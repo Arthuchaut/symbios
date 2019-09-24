@@ -44,7 +44,7 @@ class Consumer:
         exclusive: bool = False,
         arguments: ArgumentsType = None,
         consumer_tag: str = None,
-        midd_library: MiddlewareLibrary = None,
+        midd_library: MiddlewareLibrary,
     ):
         '''The Consumer initializer.
 
@@ -59,7 +59,6 @@ class Consumer:
                 Default to None.
             consumer_tag (str): The consumer identity. Default to None.
             midd_library (MiddlewareLibrary): The Symbios middleware library.
-                Default to None.
         '''
 
         self.symbios: object = symbios
