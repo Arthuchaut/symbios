@@ -19,7 +19,7 @@ class TestProducer:
         (SendingMessage({}), 'application/json'),
     ]
 
-    EMIT_DATASET: List[Tuple[Exchange, str, Props, bool bool]] = [
+    EMIT_DATASET: List[Tuple[Exchange, str, Props, bool, bool]] = [
         (
             Exchange('symbios_test_direct', exchange_type=Exchange.DIRECT),
             'symbios_test',

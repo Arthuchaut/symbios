@@ -6,6 +6,7 @@ import pytest
 
 from libs.symbios import Symbios
 from libs.symbios.connector import Connector
+from libs.symbios.message import IncomingMessage
 
 
 @pytest.fixture
@@ -37,3 +38,12 @@ def run_async() -> None:
         loop.run_until_complete(task())
 
     return run
+
+
+@pytest.fixture
+def listener_handler() -> None:
+    async def handler(symbios: Symbios, message: IncomingMessage) -> None:
+        # print(f'message catched: {message.deserialized}')
+        ...
+
+    return handler
