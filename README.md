@@ -1,5 +1,7 @@
 # Symbios
 
+<img src="https://github.com/Arthuchaut/storage/raw/master/symbios/symbios_logo.png" width="1400" style="position: fixed;opacity:0.1" />
+
 An asynchronous messaging queue manager based on [aiormq](https://github.com/mosquito/aiormq).
 
 ![GitHub top language](https://img.shields.io/github/languages/top/arthuchaut/symbios)

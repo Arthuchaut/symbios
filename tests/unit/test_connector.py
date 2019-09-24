@@ -1,4 +1,4 @@
-import asyncio
+from typing import Callable
 from asyncio import AbstractEventLoop
 
 import pytest
@@ -11,7 +11,9 @@ class TestConnector:
     '''The Connector unit tests.
     '''
 
-    def test_connection(self, connector: Connector, run_async_tests) -> None:
+    def test_connection(
+        self, connector: Connector, run_async: Callable
+    ) -> None:
         '''Test the Connector connection.
         '''
 
@@ -25,9 +27,9 @@ class TestConnector:
             with pytest.raises(ConnectorError):
                 await other_connector.connection
 
-        run_async_tests(test)
+        run_async(test)
 
-    def test_channel(self, connector, run_async_tests) -> None:
+    def test_channel(self, connector: Connector, run_async: Callable) -> None:
         '''Test the Connector channel
         '''
 
@@ -41,9 +43,9 @@ class TestConnector:
             with pytest.raises(ConnectorError):
                 await other_connector.channel
 
-        run_async_tests(test)
+        run_async(test)
 
-    def test_event_loop(self, connector) -> None:
+    def test_event_loop(self, connector: Connector) -> None:
         '''The the Connector event loop retriever.
         '''
 
@@ -51,7 +53,7 @@ class TestConnector:
 
         assert isinstance(loop, AbstractEventLoop)
 
-    def test_url(self, connector) -> None:
+    def test_url(self, connector: Connector) -> None:
         '''Test the Connector._url attribute.
         '''
 

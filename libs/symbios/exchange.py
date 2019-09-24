@@ -70,7 +70,7 @@ class Exchange:
     DIRECT: str = 'direct'
     FANOUT: str = 'fanout'
     TOPIC: str = 'topic'
-    HEADERS: str = 'match'
+    HEADERS: str = 'headers'
 
     def __init__(
         self,

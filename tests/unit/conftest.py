@@ -31,7 +31,7 @@ def connector() -> Connector:
 
 
 @pytest.fixture
-def run_async_tests() -> None:
+def run_async() -> None:
     def run(task: Task) -> None:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(task())
