@@ -12,7 +12,6 @@ class TestConsumer:
     '''
 
     LISTEN_DATASET: List[Tuple[Queue, bool, bool, ArgumentsType, str]] = [
-        (Queue(), False, False, None, None),
         (Queue('symbios_tests'), False, False, None, None),
         (Queue('symbios_tests'), True, False, None, None),
     ]
