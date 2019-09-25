@@ -24,7 +24,9 @@ class TestRPC:
         '''
 
         async def test() -> None:
-            mocked_symbios.event_loop.create_task(init_rpc_server())
+            mocked_symbios.event_loop.create_task(
+                init_rpc_server(mocked_symbios)
+            )
 
             rpc: RPC = RPC(mocked_symbios)
 
@@ -72,7 +74,9 @@ class TestRPC:
         '''
 
         async def test() -> None:
-            mocked_symbios.event_loop.create_task(init_rpc_server())
+            mocked_symbios.event_loop.create_task(
+                init_rpc_server(mocked_symbios)
+            )
             rpc: RPC = RPC(mocked_symbios)
 
             task_queue = rpc.multi_calls(

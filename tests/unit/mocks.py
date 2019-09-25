@@ -1,4 +1,4 @@
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Any
 from collections import namedtuple
 import asyncio
 
@@ -8,6 +8,7 @@ from libs.symbios import Symbios, Props, ArgumentsType
 from libs.symbios.queue import Queue
 from libs.symbios.exchange import Exchange
 from libs.symbios.message import SendingMessage, IncomingMessage
+from libs.symbios.confirmation import QueueACK, EmitACK, ExchangeACK, ListenACK
 
 
 class MockSymbios:
@@ -20,6 +21,10 @@ class MockSymbios:
     def __init__(self, symbios: Symbios):
         self.symbios: Symbios = symbios
         setattr(self.symbios, '_queue_state', {})
+
+    async def declare_queue(self, *args) -> Any:
+        await asyncio.sleep(0.5)
+        return 'OK'
 
     async def emit(
         self,
@@ -71,7 +76,7 @@ class MockSymbios:
                     ].pop()
 
                     while message:
-                        await task(self.symbios, message)
+                        await task(self, message)
                         message = self.symbios._queue_state[queue.queue].pop()
                 except (KeyError, IndexError):
                     pass
@@ -79,3 +84,20 @@ class MockSymbios:
                 await asyncio.sleep(0.2)
 
         self.symbios.event_loop.create_task(process_listener())
+
+
+class MockChannel:
+    '''The aiormq Channel mock class. 
+    '''
+
+    async def queue_declare(self, **kwargs) -> Any:
+        '''Just return an ack.
+        '''
+
+        return 'OK'
+
+    async def basic_publish(self, *args, **kwargs) -> Any:
+        '''Just return an ack.
+        '''
+
+        return 'OK'

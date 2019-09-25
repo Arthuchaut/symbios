@@ -57,6 +57,7 @@ class TestProducer:
     def test_emit(
         self,
         symbios: Symbios,
+        mocked_channel,
         run_async: Callable,
         exchange: Exchange,
         routing_key: str,
@@ -77,6 +78,8 @@ class TestProducer:
                 immediate=immediate,
                 midd_library=symbios._midd_library,
             )
+
+            mocked_channel(await producer.symbios.channel)
 
             message: SendingMessage = SendingMessage('lapin')
 

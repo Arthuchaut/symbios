@@ -69,11 +69,13 @@ class TestSymbios:
 
         run_async(test)
 
-    def test_emit(self, symbios: Symbios, run_async) -> None:
+    def test_emit(self, symbios: Symbios, mocked_channel, run_async) -> None:
         '''Test the Symbios.emit method.
         '''
 
         async def test() -> None:
+            mocked_channel(await symbios.channel)
+
             message: SendingMessage = SendingMessage('Lapin')
             ack: EmitACK = await symbios.emit(
                 message, routing_key='symbios_tests'
