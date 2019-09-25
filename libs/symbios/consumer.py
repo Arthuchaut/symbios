@@ -14,6 +14,7 @@ from . import Channel, DeliveredMessage, ArgumentsType
 from .message import IncomingMessage
 from .queue import Queue
 from .middleware import MiddlewareLibrary, Event
+from .confirmation import ListenACK, QueueACK
 
 
 class Consumer:
@@ -74,27 +75,35 @@ class Consumer:
 
     async def listen(
         self, task: Callable[[object, IncomingMessage], None]
-    ) -> None:
+    ) -> ListenACK:
         '''Listen a queue.
 
         Args:
             task (Callable[[Symbios, IncomingMessage], None]): 
                 The task to call when a message arrives.
+
+        Returns:
+            ListenACK: The consumer confirmation.
         '''
 
         self.task = task
         chann: Channel = await self.symbios.channel
 
-        self.declare_ok = await chann.queue_declare(**self.queue.__dict__)
+        declare_ok = await chann.queue_declare(**self.queue.__dict__)
+        self.declare_ok = QueueACK(declare_ok)
 
-        self.consume_ok = await chann.basic_consume(
-            self.declare_ok.queue,
+        consume_ok = await chann.basic_consume(
+            self.declare_ok.confirmation.queue,
             self._embed,
             no_ack=self.no_ack,
             exclusive=self.exclusive,
             arguments=self.arguments,
             consumer_tag=self.consumer_tag,
         )
+
+        self.consume_ok = ListenACK(consume_ok)
+
+        return self.consume_ok
 
     async def _embed(self, message: DeliveredMessage) -> None:
         '''Embed the task with the Symbios parameters.

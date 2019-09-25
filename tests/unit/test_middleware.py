@@ -12,7 +12,12 @@ import pytest
 
 from libs.symbios import Symbios
 from libs.symbios.message import IncomingMessage, SendingMessage
-from libs.symbios.middleware import MiddlewareABC, MiddlewareLibrary, Event
+from libs.symbios.middleware import (
+    MiddlewareABC,
+    MiddlewareLibrary,
+    Event,
+    MiddlewareLibraryError,
+)
 
 
 class TestMiddlewareABC:
@@ -60,6 +65,17 @@ class TestMiddlewareLibrary:
             ) -> None:
                 ...
 
+        class NotMiddlewareTest:
+            def __init__(self, event: int):
+                ...
+
+            async def execute(
+                self,
+                symbios: Symbios,
+                message: Union[IncomingMessage, SendingMessage],
+            ) -> None:
+                ...
+
         midd_lib: MiddlewareLibrary = MiddlewareLibrary()
 
         assert not len(midd_lib._library[event])
@@ -71,6 +87,9 @@ class TestMiddlewareLibrary:
         midd_lib.append(MiddlewareTest(event))
 
         assert len(midd_lib._library[event]) == 2
+
+        with pytest.raises(MiddlewareLibraryError):
+            midd_lib.append(NotMiddlewareTest(event))
 
     @pytest.mark.parametrize('event', [Event.ON_EMIT, Event.ON_LISTEN])
     def test_run_until_end(self, run_async, event: int) -> None:

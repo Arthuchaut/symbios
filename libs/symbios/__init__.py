@@ -1,5 +1,6 @@
 from typing import NewType
 
+import pamqp
 import aiormq
 from aiormq import Channel, Connection
 

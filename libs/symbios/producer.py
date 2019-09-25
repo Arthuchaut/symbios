@@ -12,6 +12,7 @@ from . import Props, Channel
 from .message import SendingMessage
 from .exchange import Exchange
 from .middleware import MiddlewareLibrary, Event
+from .confirmation import EmitACK, ExchangeACK
 
 
 class Producer:
@@ -75,9 +76,11 @@ class Producer:
         self.props: Props = props
         self.mandatory: bool = mandatory
         self.immediate: bool = immediate
+        self.declare_ok: object = None
+        self.produce_ok: object = None
         self._midd_library: MiddlewareLibrary = midd_library
 
-    async def emit(self, message: SendingMessage) -> None:
+    async def emit(self, message: SendingMessage) -> EmitACK:
         '''Emit a message to the broker.
 
         Important: Make sure that the destination queue(s) are correctly 
@@ -89,12 +92,16 @@ class Producer:
 
         Raises:
             ProducerError: If the type of exchange requires a routing_key.
+
+        Returns:
+            EmitACK: The producer confirmation.
         '''
 
         chann: Channel = await self.symbios.channel
 
         if self.exchange.exchange != '' and self.exchange.exchange is not None:
-            await chann.exchange_declare(**self.exchange.__dict__)
+            declare_ok = await chann.exchange_declare(**self.exchange.__dict__)
+            self.declare_ok = ExchangeACK(declare_ok)
 
         if not self.exchange.exchange_type in [
             Exchange.FANOUT,
@@ -115,7 +122,7 @@ class Producer:
                 self.symbios, message, Event.ON_EMIT
             )
 
-        await chann.basic_publish(
+        produce_ok = await chann.basic_publish(
             message.serialized,
             routing_key=self.routing_key,
             exchange=self.exchange.exchange,
@@ -123,6 +130,10 @@ class Producer:
             immediate=self.immediate,
             mandatory=self.mandatory,
         )
+
+        self.produce_ok = EmitACK(produce_ok)
+
+        return self.produce_ok
 
     def _determine_content_type(self, message: SendingMessage) -> str:
         '''Try to determine the content-type via the message type.

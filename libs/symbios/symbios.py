@@ -10,7 +10,7 @@
 
 from typing import Dict, Union, Callable, Awaitable, Any
 
-from . import Props, ArgumentsType, Channel, GetEmpty, GetOk
+from . import Props, ArgumentsType, Channel
 from .connector import Connector
 from .queue import Queue
 from .exchange import Exchange
@@ -21,6 +21,7 @@ from .consumer import Consumer
 from .rpc import RPC
 
 from middlewares import SerializerMiddleware, DeserializerMiddleware
+from .confirmation import EmitACK, ListenACK, ExchangeACK, QueueACK
 
 
 class Symbios(Connector):
@@ -54,35 +55,37 @@ class Symbios(Connector):
         self.use(SerializerMiddleware(Event.ON_EMIT))
         self.use(DeserializerMiddleware(Event.ON_LISTEN))
 
-    async def declare_queue(self, queue: Queue) -> Union[GetEmpty, GetOk]:
+    async def declare_queue(self, queue: Queue) -> QueueACK:
         '''Declare a queue to the broker.
 
         Args:
             queue (Queue): The queue to declare
 
         Returns:
-            Union[GetEmpty, GetOk]: The validation of the declaration.
+            QueueACK: The validation of the declaration.
         '''
 
         chan: Channel = await self.channel
 
-        return await chan.queue_declare(**queue.__dict__)
+        confirmation = await chan.queue_declare(**queue.__dict__)
 
-    async def declare_exchange(
-        self, exhange: Exchange
-    ) -> Union[GetEmpty, GetOk]:
+        return QueueACK(confirmation)
+
+    async def declare_exchange(self, exchange: Exchange) -> ExchangeACK:
         '''Declare an exchange to the broker.
 
         Args:
-            exhange (Exchange): The exchange to declare
+            exchange (Exchange): The exchange to declare
 
         Returns:
-            Union[GetEmpty, GetOk]: The validation of the declaration.
+            ExchangeACK: The validation of the declaration.
         '''
 
         chan: Channel = await self.channel
 
-        return await chan.exchange_declare(**exchange.__dict__)
+        confirmation = await chan.exchange_declare(**exchange.__dict__)
+
+        return ExchangeACK(confirmation)
 
     async def emit(
         self,
@@ -120,7 +123,7 @@ class Symbios(Connector):
             midd_library=self._midd_library,
         )
 
-        await producer.emit(message)
+        return await producer.emit(message)
 
     async def listen(
         self,
@@ -157,7 +160,7 @@ class Symbios(Connector):
             midd_library=self._midd_library,
         )
 
-        await consumer.listen(task)
+        return await consumer.listen(task)
 
     def use(self, midd: MiddlewareABC) -> None:
         '''Implement a new middleware for the consumer.

@@ -5,6 +5,7 @@ import pytest
 from libs.symbios import Symbios, Props, ArgumentsType
 from libs.symbios.queue import Queue
 from libs.symbios.consumer import Consumer
+from libs.symbios.confirmation import ListenACK
 
 
 class TestConsumer:
@@ -44,6 +45,8 @@ class TestConsumer:
                 midd_library=symbios._midd_library,
             )
 
-            await consumer.listen(listener_handler)
+            ack: ListenACK = await consumer.listen(listener_handler)
+
+            assert isinstance(ack, ListenACK)
 
         run_async(test)

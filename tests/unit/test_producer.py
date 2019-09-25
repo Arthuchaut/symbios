@@ -6,6 +6,7 @@ from libs.symbios import Symbios, Props
 from libs.symbios.exchange import Exchange
 from libs.symbios.producer import Producer
 from libs.symbios.message import SendingMessage
+from libs.symbios.confirmation import EmitACK
 
 
 class TestProducer:
@@ -79,7 +80,9 @@ class TestProducer:
 
             message: SendingMessage = SendingMessage('lapin')
 
-            await producer.emit(message)
+            ack: EmitACK = await producer.emit(message)
+
+            assert isinstance(ack, EmitACK)
 
         run_async(test)
 
