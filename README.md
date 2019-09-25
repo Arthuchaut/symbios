@@ -1,6 +1,6 @@
 # Symbios
 
-![](https://github.com/Arthuchaut/storage/raw/master/symbios/symbios_logo.png)
+![](https://github.com/Arthuchaut/storage/raw/master/symbios/symbios_github_banner_left.png)
 
 An asynchronous messaging queue manager based on [aiormq](https://github.com/mosquito/aiormq).
 
