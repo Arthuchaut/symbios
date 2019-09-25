@@ -9,7 +9,6 @@ pytest = "*"
 
 [packages]
 aiormq = "*"
-pytest-asyncio = "*"
 
 [requires]
 python_version = "3.7"
