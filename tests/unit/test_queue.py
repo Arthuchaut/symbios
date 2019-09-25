@@ -8,6 +8,42 @@
 
 import pytest
 
+from libs.symbios.queue import Queue
+
 
 class TestQueue:
-    ...
+    @pytest.mark.parametrize('name', ['queue_name'])
+    @pytest.mark.parametrize('passive', [False, True])
+    @pytest.mark.parametrize('durable', [False, True])
+    @pytest.mark.parametrize('exclusive', [False, True])
+    @pytest.mark.parametrize('auto_delete', [False, True])
+    @pytest.mark.parametrize('nowait', [False, True])
+    @pytest.mark.parametrize('arguments', [{}])
+    def test_queue(
+        name: str,
+        passive: bool,
+        durable: bool,
+        exclusive: bool,
+        auto_delete: bool,
+        nowait: bool,
+        arguments: dict,
+    ) -> None:
+        queue: Queue = Queue(
+            name,
+            passive=passive,
+            durable=durable,
+            exclusive=exclusive,
+            auto_delete=auto_delete,
+            nowait=nowait,
+            arguments=arguments,
+        )
+
+        assert (
+            queue.queue == queue
+            and queue.passive == passive
+            and queue.durable == durable
+            and queue.exclusive == exclusive
+            and queue.auto_delete == auto_delete
+            and queue.nowait == nowait
+            and queue.arguments == arguments
+        )
