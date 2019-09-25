@@ -12,6 +12,9 @@ from libs.symbios.exchange import Exchange
 
 
 class TestExchange:
+    '''The Exchange tests class.
+    '''
+
     @pytest.mark.parametrize('name', ['exchange_name'])
     @pytest.mark.parametrize(
         'exchange_type',
@@ -32,6 +35,9 @@ class TestExchange:
         nowait: bool,
         arguments: dict,
     ) -> None:
+        '''Test the Exchange class attributes integrity.
+        '''
+
         exchange: Exchange = Exchange(
             name,
             exchange_type=exchange_type,

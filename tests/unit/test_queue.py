@@ -12,6 +12,9 @@ from libs.symbios.queue import Queue
 
 
 class TestQueue:
+    '''The Queue tests class.
+    '''
+
     @pytest.mark.parametrize('name', ['queue_name'])
     @pytest.mark.parametrize('passive', [False, True])
     @pytest.mark.parametrize('durable', [False, True])
@@ -29,6 +32,9 @@ class TestQueue:
         nowait: bool,
         arguments: dict,
     ) -> None:
+        '''Test the Queue class attributes integrity.
+        '''
+
         queue: Queue = Queue(
             name,
             passive=passive,
