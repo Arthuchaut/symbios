@@ -6,8 +6,6 @@
 @note    0.1.0 Writing the first drafts.
 '''
 
-from typing import List, Tuple
-
 import pytest
 
 from libs.symbios.exchange import Exchange
@@ -25,6 +23,7 @@ class TestExchange:
     @pytest.mark.parametrize('nowait', [False, True])
     @pytest.mark.parametrize('arguments', [{}])
     def test_exchange(
+        self,
         name: str,
         exchange_type: str,
         passive: bool,
@@ -44,7 +43,7 @@ class TestExchange:
         )
 
         assert (
-            exchange.exchange == exchange
+            exchange.exchange == name
             and exchange.exchange_type == exchange_type
             and exchange.passive == passive
             and exchange.durable == durable

@@ -20,6 +20,7 @@ class TestQueue:
     @pytest.mark.parametrize('nowait', [False, True])
     @pytest.mark.parametrize('arguments', [{}])
     def test_queue(
+        self,
         name: str,
         passive: bool,
         durable: bool,
@@ -39,7 +40,7 @@ class TestQueue:
         )
 
         assert (
-            queue.queue == queue
+            queue.queue == name
             and queue.passive == passive
             and queue.durable == durable
             and queue.exclusive == exclusive
