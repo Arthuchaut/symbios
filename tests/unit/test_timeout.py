@@ -12,7 +12,7 @@ from time import time
 
 import pytest
 
-from libs.symbios.timeout import Timeout, TimeoutElapsed
+from symbios.timeout import Timeout, TimeoutElapsed
 
 
 class TestTimeout:

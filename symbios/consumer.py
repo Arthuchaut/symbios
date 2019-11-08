@@ -10,7 +10,7 @@ import asyncio
 
 from typing import Callable, Awaitable, Any
 
-from . import Channel, DeliveredMessage, ArgumentsType
+from .utils import Channel, DeliveredMessage, ArgumentsType
 from .message import IncomingMessage
 from .queue import Queue
 from .middleware import MiddlewareLibrary, Event

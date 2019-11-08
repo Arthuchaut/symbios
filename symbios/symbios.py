@@ -10,7 +10,7 @@
 
 from typing import Dict, Union, Callable, Awaitable, Any
 
-from . import Props, ArgumentsType, Channel
+from .utils import Props, ArgumentsType, Channel
 from .connector import Connector
 from .queue import Queue
 from .exchange import Exchange
@@ -20,7 +20,8 @@ from .producer import Producer
 from .consumer import Consumer
 from .rpc import RPC
 
-from middlewares import SerializerMiddleware, DeserializerMiddleware
+from middlewares.deserializer_middleware import DeserializerMiddleware
+from middlewares.serializer_middleware import SerializerMiddleware
 from .confirmation import EmitACK, ListenACK, ExchangeACK, QueueACK
 
 

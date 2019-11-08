@@ -4,11 +4,12 @@ import asyncio
 
 import pytest
 
-from libs.symbios import Symbios, Props, ArgumentsType
-from libs.symbios.queue import Queue
-from libs.symbios.exchange import Exchange
-from libs.symbios.message import SendingMessage, IncomingMessage
-from libs.symbios.confirmation import QueueACK, EmitACK, ExchangeACK, ListenACK
+from symbios import Symbios
+from symbios.utils import Props, ArgumentsType
+from symbios.queue import Queue
+from symbios.exchange import Exchange
+from symbios.message import SendingMessage, IncomingMessage
+from symbios.confirmation import QueueACK, EmitACK, ExchangeACK, ListenACK
 
 
 class MockSymbios:

@@ -12,7 +12,7 @@ from asyncio import Task, Future
 
 import aiormq
 
-from . import Props
+from .utils import Props
 from .message import IncomingMessage, SendingMessage
 from .queue import Queue
 from .timeout import Timeout

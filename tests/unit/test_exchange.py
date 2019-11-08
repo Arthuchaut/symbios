@@ -8,7 +8,7 @@
 
 import pytest
 
-from libs.symbios.exchange import Exchange
+from symbios.exchange import Exchange
 
 
 class TestExchange:

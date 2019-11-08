@@ -10,11 +10,12 @@ import asyncio
 
 import pytest
 
-from libs.symbios import Symbios, Props
-from libs.symbios.message import SendingMessage, IncomingMessage
-from libs.symbios.rpc import RPC
-from libs.symbios.queue import Queue
-from libs.symbios.timeout import Timeout
+from symbios import Symbios
+from symbios.utils import Props
+from symbios.message import SendingMessage, IncomingMessage
+from symbios.rpc import RPC
+from symbios.queue import Queue
+from symbios.timeout import Timeout
 from .mocks import MockSymbios
 
 

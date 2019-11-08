@@ -2,11 +2,12 @@ from typing import Callable, List, Tuple
 
 import pytest
 
-from libs.symbios import Symbios, Props
-from libs.symbios.exchange import Exchange
-from libs.symbios.producer import Producer
-from libs.symbios.message import SendingMessage
-from libs.symbios.confirmation import EmitACK
+from symbios import Symbios
+from symbios.utils import Props
+from symbios.exchange import Exchange
+from symbios.producer import Producer
+from symbios.message import SendingMessage
+from symbios.confirmation import EmitACK
 
 
 class TestProducer:

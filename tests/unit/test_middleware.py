@@ -10,9 +10,9 @@ from typing import Union
 
 import pytest
 
-from libs.symbios import Symbios
-from libs.symbios.message import IncomingMessage, SendingMessage
-from libs.symbios.middleware import (
+from symbios import Symbios
+from symbios.message import IncomingMessage, SendingMessage
+from symbios.middleware import (
     MiddlewareABC,
     MiddlewareLibrary,
     Event,

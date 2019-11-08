@@ -8,7 +8,7 @@
 
 from typing import Awaitable, Any, Dict
 
-from . import Props, Channel
+from .utils import Props, Channel
 from .message import SendingMessage
 from .exchange import Exchange
 from .middleware import MiddlewareLibrary, Event

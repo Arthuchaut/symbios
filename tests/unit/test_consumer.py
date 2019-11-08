@@ -2,10 +2,11 @@ from typing import Callable, List, Tuple
 
 import pytest
 
-from libs.symbios import Symbios, Props, ArgumentsType
-from libs.symbios.queue import Queue
-from libs.symbios.consumer import Consumer
-from libs.symbios.confirmation import ListenACK
+from symbios import Symbios
+from symbios.utils import Props, ArgumentsType
+from symbios.queue import Queue
+from symbios.consumer import Consumer
+from symbios.confirmation import ListenACK
 
 
 class TestConsumer:

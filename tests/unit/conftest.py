@@ -6,10 +6,11 @@ from collections import namedtuple
 
 import pytest
 
-from libs.symbios import Symbios, Props
-from libs.symbios.connector import Connector
-from libs.symbios.message import IncomingMessage, SendingMessage
-from libs.symbios.queue import Queue
+from symbios.utils import Props
+from symbios import Symbios
+from symbios.connector import Connector
+from symbios.message import IncomingMessage, SendingMessage
+from symbios.queue import Queue
 from .mocks import MockSymbios, MockChannel
 
 

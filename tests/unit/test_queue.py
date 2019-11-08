@@ -8,7 +8,7 @@
 
 import pytest
 
-from libs.symbios.queue import Queue
+from symbios.queue import Queue
 
 
 class TestQueue:

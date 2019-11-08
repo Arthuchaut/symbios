@@ -3,8 +3,9 @@ from asyncio import AbstractEventLoop
 
 import pytest
 
-from libs.symbios import Symbios, Connection, Channel
-from libs.symbios.connector import Connector, ConnectorError
+from symbios import Symbios
+from symbios.utils import Connection, Channel
+from symbios.connector import Connector, ConnectorError
 
 
 class TestConnector:

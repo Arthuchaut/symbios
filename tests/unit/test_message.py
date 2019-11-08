@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from libs.symbios import Props
-from libs.symbios.message import SendingMessage, IncomingMessage
+from symbios.utils import Props
+from symbios.message import SendingMessage, IncomingMessage
 
 
 class TestSendingMessage:

@@ -9,8 +9,8 @@
 from typing import Union, Dict, Any
 import json
 
-from libs.symbios.middleware import MiddlewareABC
-from libs.symbios.message import IncomingMessage
+from symbios.middleware import MiddlewareABC
+from symbios.message import IncomingMessage
 
 
 class DeserializerMiddleware(MiddlewareABC):

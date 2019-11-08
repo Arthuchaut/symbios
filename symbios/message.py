@@ -11,7 +11,7 @@
 from typing import Union, Dict, Any
 import json
 
-from . import DeliveredMessage, GetEmpty, GetOk, Props
+from .utils import DeliveredMessage, GetEmpty, GetOk, Props
 
 
 class IncomingMessage:

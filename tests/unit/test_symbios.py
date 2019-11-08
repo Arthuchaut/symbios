@@ -10,14 +10,15 @@ from typing import Union
 
 import pytest
 
-from libs.symbios import Symbios, Props
-from libs.symbios.queue import Queue
-from libs.symbios.exchange import Exchange
-from libs.symbios.middleware import MiddlewareABC, Event
-from libs.symbios.confirmation import ExchangeACK, QueueACK, EmitACK, ListenACK
-from libs.symbios.message import SendingMessage, IncomingMessage
-
-from middlewares import DeserializerMiddleware, SerializerMiddleware
+from symbios import Symbios
+from symbios.utils import Props
+from symbios.queue import Queue
+from symbios.exchange import Exchange
+from symbios.middleware import MiddlewareABC, Event
+from symbios.confirmation import ExchangeACK, QueueACK, EmitACK, ListenACK
+from symbios.message import SendingMessage, IncomingMessage
+from middlewares.deserializer_middleware import DeserializerMiddleware
+from middlewares.serializer_middleware import SerializerMiddleware
 
 
 class TestSymbios:
