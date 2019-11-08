@@ -151,6 +151,8 @@ class Symbios(Connector):
             consumer_tag (str): The consumer identity. Default to None.
         '''
 
+        ack: QueueACK = await self.declare_queue(queue)
+
         consumer: Consumer = Consumer(
             symbios=self,
             queue=queue,

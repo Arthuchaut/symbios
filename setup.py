@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-    name='Symbios',
-    packages=['Symbios'],
-    version='0.1.0',
+    name='symbios',
+    packages=['symbios', 'middlewares'],
+    version='1.1.0',
     license='MIT',
     description='A simple asynchronous AMQP library writed for Python.',
     author='Arthuchaut',
